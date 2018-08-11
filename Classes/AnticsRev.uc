@@ -1,11 +1,40 @@
 class AnticsRev extends Gameplay.Mutator config(AnticsRev);
  
-var config bool RemoveColorCodes; 
+var config bool RemoveColorCodes;
+var config string SelfServerPackage;
+var config string AnticsServerPackage;
 
 event PostBeginPlay()
 {
     log("[AnticsRev]: Init");
     SetTimer(2, True);
+    LoadCharacterController(); 
+}
+
+function LoadCharacterController()
+{
+	local Gameplay.ModeInfo MI;
+    local string newClassName;
+	
+	foreach AllActors(class'Gameplay.ModeInfo', MI)
+	{
+		if (MI != None)
+		{
+            if (MI.PlayerControllerClassName == "antics_v5.anticsCharacterController") {
+                Log("[AnticsRev]: Antics detected!");
+                newClassName = SelfServerPackage $ ".AnticsRevPCAntics";
+            } else if (MI.PlayerControllerClassName == "Gameplay.PlayerCharacterController") {
+                newClassName = SelfServerPackage $ ".AnticsRevPC";
+            } else {
+                Log("[AnticsRev]: Unknown PC class" @ MI.PlayerControllerClassName);
+                continue;
+            }
+
+			Log("[AnticsRev]: Replacing PC class" @ MI.PlayerControllerClassName @ "with" @ newClassName);
+			MI.PlayerControllerClassName = newClassName;
+			break;
+		}
+	}
 }
 
 function string RenameEmptyToNewBbood(string s) {
@@ -84,4 +113,6 @@ simulated function Mutate(string Command, PlayerController Sender)
 defaultproperties
 {
     RemoveColorCodes = true
+    SelfServerPackage = "AnticsRev";
+    AnticsServerPackage = "antics_v5";
 }
